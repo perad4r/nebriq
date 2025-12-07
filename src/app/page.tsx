@@ -10,6 +10,7 @@ import { ProblemSection } from "@/modules/landing-page/sections/problem";
 import { PricingSection } from "@/modules/landing-page/sections/pricing-section";
 import { OpenSourceSection } from "@/modules/landing-page/sections/open-source-section";
 import { polar } from "@/shared/lib/polar/client";
+import type { Product } from "@polar-sh/sdk/models/components/product.js";
 
 export default async function Home() {
   const motionConfig = {
@@ -18,11 +19,19 @@ export default async function Home() {
     transition: { duration: 0.6, ease: "easeOut" },
   };
 
-  const polarClient = await polar();
+  let products: Product[] = [];
 
-  const { result } = await polarClient.products.list({
-    isArchived: false,
-  });
+  try {
+    const polarClient = await polar();
+
+    const { result } = await polarClient.products.list({
+      isArchived: false,
+    });
+
+    products = result.items ?? [];
+  } catch (error) {
+    console.error("Failed to load Polar products:", error);
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -48,7 +57,7 @@ export default async function Home() {
 
         <OpenSourceSection />
 
-        <PricingSection products={result.items} />
+        <PricingSection products={products} />
 
         <CtaSection />
 
